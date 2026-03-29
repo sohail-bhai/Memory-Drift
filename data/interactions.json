@@ -1,0 +1,14 @@
+{
+  "interactions": [
+    {"category": "action", "timestamp": "2026-03-18T09:10:00+00:00", "user_id": "u_demo"},
+    {"category": "action", "timestamp": "2026-03-18T14:32:00+00:00", "user_id": "u_demo"},
+    {"category": "comedy", "timestamp": "2026-03-19T12:00:00+00:00", "user_id": "u_demo"},
+    {"category": "action", "timestamp": "2026-03-20T08:05:00+00:00", "user_id": "u_demo"},
+    {"category": "drama", "timestamp": "2026-03-21T18:00:00+00:00", "user_id": "u_demo"},
+    {"category": "romance", "timestamp": "2026-03-27T11:30:00+00:00", "user_id": "u_demo"},
+    {"category": "romance", "timestamp": "2026-03-28T15:40:00+00:00", "user_id": "u_demo"},
+    {"category": "drama", "timestamp": "2026-03-28T21:00:00+00:00", "user_id": "u_demo"},
+    {"category": "romance", "timestamp": "2026-03-29T09:20:00+00:00", "user_id": "u_demo"},
+    {"category": "drama", "timestamp": "2026-03-29T12:55:00+00:00", "user_id": "u_demo"}
+  ]
+}
