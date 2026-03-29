@@ -17,6 +17,7 @@ from agent_system import (
         analyze_user_drift,
         load_interactions_from_csv,
         load_interactions_from_json,
+    load_interactions_from_memory_store,
 )
 
 
@@ -86,6 +87,13 @@ def print_output(result):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run memory drift detection demo")
+    parser.add_argument(
+        "--source-mode",
+        choices=["simulator", "team"],
+        default="simulator",
+        help="Data source mode when --input is not provided",
+    )
+    parser.add_argument("--user-id", default="user_001", help="User id for team source mode")
     parser.add_argument("--input", help="Path to input interactions file")
     parser.add_argument("--format", choices=["csv", "json"], help="Input file format")
     parser.add_argument("--category-field", default="category", help="Category field name")
@@ -111,6 +119,12 @@ def main():
             args.input,
             category_field=args.category_field,
             timestamp_field=args.timestamp_field,
+        )
+    elif args.source_mode == "team":
+        interactions = load_interactions_from_memory_store(
+            user_id=args.user_id,
+            past_days=args.past_days,
+            current_days=args.current_days,
         )
     else:
         interactions = build_demo_interactions(now=now)

@@ -32,7 +32,10 @@ pip install -r requirements.txt
 python run_project.py
 python run_project.py --input data/interactions.json --format json
 python run_project.py --input data/interactions.csv --format csv
+python run_project.py --source-mode team --user-id user_001
 ```
+
+`--source-mode team` uses teammate modules `data_source.py` and `memory_store.py` directly.
 
 ## One-Command Demo (Recommended)
 
@@ -45,6 +48,19 @@ This runs two scenarios in sequence:
 - High drift behavior using `data/interactions.json`
 
 It prints a final side-by-side summary so judges can quickly compare adaptive behavior.
+
+## Streamlit UI
+
+Run the integrated UI:
+
+```bash
+streamlit run ui.py
+```
+
+The UI uses:
+- team data + memory modules (`data_source.py`, `memory_store.py`)
+- AI explanation wrapper (`ai_module.py`)
+- output shaping (`output_formatter.py`)
 
 The script prints:
 - Drift detected flag

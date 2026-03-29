@@ -27,6 +27,13 @@ from urllib.error import HTTPError, URLError
 
 from drift_engine import run_drift_analysis
 
+try:
+    from data_source import BrightDataSource
+    from memory_store import MemoryStore
+except Exception:
+    BrightDataSource = None
+    MemoryStore = None
+
 
 @dataclass(frozen=True)
 class Interaction:
@@ -153,6 +160,72 @@ def load_interactions_from_csv(
 
     interactions.sort(key=lambda x: x.timestamp)
     return interactions
+
+
+def interactions_from_records(
+    records: Iterable[Dict[str, Any]],
+    category_field: str = "category",
+    timestamp_field: str = "timestamp",
+    source: str = "external_records",
+) -> List[Interaction]:
+    """Converts external dict records into normalized Interaction objects."""
+    interactions: List[Interaction] = []
+    for record in records:
+        category_raw = record.get(category_field)
+        timestamp_raw = record.get(timestamp_field)
+        if category_raw is None or timestamp_raw is None:
+            continue
+
+        category = str(category_raw).strip().lower()
+        if not category:
+            continue
+
+        timestamp = _parse_timestamp(timestamp_raw)
+        meta = {
+            k: str(v)
+            for k, v in record.items()
+            if k not in {category_field, timestamp_field}
+        }
+        interactions.append(
+            Interaction(category=category, timestamp=timestamp, source=source, metadata=meta)
+        )
+
+    interactions.sort(key=lambda x: x.timestamp)
+    return interactions
+
+
+def load_interactions_from_memory_store(
+    user_id: str = "user_001",
+    past_days: int = 7,
+    current_days: int = 2,
+) -> List[Interaction]:
+    """
+    Loads interactions via teammate modules data_source.py + memory_store.py.
+
+    Returns a combined list of past+current events converted to Interaction objects.
+    """
+    if BrightDataSource is None or MemoryStore is None:
+        raise RuntimeError("data_source.py or memory_store.py is unavailable for integration.")
+
+    source = BrightDataSource(user_id=user_id)
+    memory = MemoryStore(user_id=user_id)
+    memory.load_from_source(source)
+
+    past_records = memory.get_past()
+    current_records = memory.get_current()
+
+    past_interactions = interactions_from_records(
+        past_records,
+        source=f"memory_store_past_{past_days}d",
+    )
+    current_interactions = interactions_from_records(
+        current_records,
+        source=f"memory_store_current_{current_days}d",
+    )
+
+    combined = past_interactions + current_interactions
+    combined.sort(key=lambda x: x.timestamp)
+    return combined
 
 
 class InteractionMemory:

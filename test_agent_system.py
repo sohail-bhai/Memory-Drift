@@ -20,15 +20,19 @@ from agent_system import (
     extract_preferences,
     load_interactions_from_csv,
     load_interactions_from_json,
+    load_interactions_from_memory_store,
 )
 
 
 PASS = "  PASS"
 FAIL = "  FAIL"
 errors = []
+checks_run = 0
 
 
 def check(name: str, condition: bool, detail: str = ""):
+    global checks_run
+    checks_run += 1
     if condition:
         print(f"{PASS}  {name}")
     else:
@@ -141,6 +145,23 @@ def test_featherless_response_parsing():
     check("responses parsing works", isinstance(responses_text, str) and "Intent" in responses_text)
 
 
+def test_team_data_memory_integration():
+    now = datetime.now(timezone.utc)
+    interactions = load_interactions_from_memory_store(user_id="user_001", past_days=7, current_days=2)
+    check("team integration returns interactions", len(interactions) > 0)
+    check("team integration normalizes category case", interactions[0].category == interactions[0].category.lower())
+
+    result = analyze_user_drift(
+        interactions=interactions,
+        past_days=7,
+        current_days=2,
+        now=now,
+        include_chart=False,
+    )
+    check("team integration result has drift_rate", "drift_rate" in result)
+    check("team integration result has recommendations", "recommendations" in result)
+
+
 if __name__ == "__main__":
     print("\n-- test_extract_preferences --")
     test_extract_preferences()
@@ -154,7 +175,10 @@ if __name__ == "__main__":
     print("\n-- test_featherless_response_parsing --")
     test_featherless_response_parsing()
 
-    total = 24
+    print("\n-- test_team_data_memory_integration --")
+    test_team_data_memory_integration()
+
+    total = checks_run
     passed = total - len(errors)
 
     print("\n" + "=" * 42)
